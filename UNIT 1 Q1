@@ -1,0 +1,47 @@
+import random
+GRID_SIZE = 5
+DIRT = 1
+OBSTACLE = -1
+EMPTY = 0
+grid = [
+    [0,  0,  1,  0, -1],
+    [0, -1,  0,  1,  0],
+    [1,  0,  0, -1,  0],
+    [0, -1,  1,  0,  0],
+    [0,  0,  0,  1,  0]
+]
+actions = ['up', 'down', 'left', 'right']
+def move(position, action):
+    x, y = position
+    if action == 'up' and x > 0:
+        x -= 1
+    elif action == 'down' and x < GRID_SIZE - 1:
+        x += 1
+    elif action == 'left' and y > 0:
+        y -= 1
+    elif action == 'right' and y < GRID_SIZE - 1:
+        y += 1
+    return (x, y)
+def random_policy():
+    return random.choice(actions)
+
+def greedy_policy(position):
+    x, y = position
+    for action in actions:
+        nx, ny = move(position, action)
+        if grid[nx][ny] == DIRT:
+            return action
+    return random.choice(actions)
+def simulate(policy, steps=20):
+    position = (0, 0)
+    total_reward = 0
+for step in range(steps):
+        action = policy(position)
+        position = move(position, action)
+        reward = grid[position[0]][position[1]]
+        total_reward += reward
+return total_reward
+random_reward = simulate(random_policy)
+greedy_reward = simulate(greedy_policy)
+print("Total reward using Random Policy:", random_reward)
+print("Total reward using Greedy Policy:", greedy_reward)
