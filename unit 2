@@ -1,0 +1,65 @@
+import numpy as np
+
+# States: 0 = Low, 1 = Medium, 2 = High traffic
+# Actions: 0 = Short, 1 = Medium, 2 = Long green light
+num_states = 3
+num_actions = 3
+gamma = 0.9  # Discount factor
+
+# Reward matrix (negative waiting time)
+R = np.array([
+    [-1, -2, -3],   # Low traffic
+    [-2, -1, -2],   # Medium traffic
+    [-4, -2, -1]    # High traffic
+])
+
+# Transition probabilities P[s][a][s']
+P = {
+    0: {
+        0: [0.6, 0.4, 0.0],
+        1: [0.7, 0.3, 0.0],
+        2: [0.8, 0.2, 0.0]
+    },
+    1: {
+        0: [0.2, 0.6, 0.2],
+        1: [0.3, 0.5, 0.2],
+        2: [0.4, 0.5, 0.1]
+    },
+    2: {
+        0: [0.0, 0.4, 0.6],
+        1: [0.1, 0.5, 0.4],
+        2: [0.2, 0.6, 0.2]
+    }
+}
+
+# Initialize policy and value function
+policy = np.zeros(num_states, dtype=int)
+V = np.zeros(num_states)
+
+# Policy Iteration
+stable = False
+while not stable:
+    # Policy Evaluation
+    for _ in range(50):
+        for s in range(num_states):
+            a = policy[s]
+            V[s] = R[s][a] + gamma * sum(
+                P[s][a][s1] * V[s1] for s1 in range(num_states)
+            )
+
+    # Policy Improvement
+    stable = True
+    for s in range(num_states):
+        old_action = policy[s]
+        action_values = []
+        for a in range(num_actions):
+            value = R[s][a] + gamma * sum(
+                P[s][a][s1] * V[s1] for s1 in range(num_states)
+            )
+            action_values.append(value)
+        policy[s] = np.argmax(action_values)
+        if old_action != policy[s]:
+            stable = False
+
+print("Optimal Policy (0=Short, 1=Medium, 2=Long):", policy)
+print("Optimal State Values:", V)
