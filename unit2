@@ -1,0 +1,48 @@
+import itertools
+
+Qmax=5
+mu=2
+lam_ns=1
+lam_ew=1
+gamma=0.9
+
+states=[(i,j,p) for i in range(Qmax+1) for j in range(Qmax+1) for p in [0,1]]
+actions=[0,1]
+
+def step(s,a):
+    qn,qe,p=s
+    if a==1:
+        p=1-p
+    else:
+        if p==0:
+            qn=max(0,qn-mu)
+        else:
+            qe=max(0,qe-mu)
+    qn=min(Qmax,qn+lam_ns)
+    qe=min(Qmax,qe+lam_ew)
+    r=-(qn+qe)
+    return (qn,qe,p),r
+
+V={s:0.0 for s in states}
+policy={s:0 for s in states}
+
+stable=False
+while not stable:
+    for _ in range(50):
+        for s in states:
+            ns,r=step(s,policy[s])
+            V[s]=r+gamma*V[ns]
+    stable=True
+    for s in states:
+        old=policy[s]
+        values=[]
+        for a in actions:
+            ns,r=step(s,a)
+            values.append(r+gamma*V[ns])
+        policy[s]=actions[values.index(max(values))]
+        if policy[s]!=old:
+            stable=False
+
+print("Optimal policy:")
+for s in [(0,0,0),(2,3,0),(1,4,1),(5,5,0)]:
+    print(s,"->",policy[s])
