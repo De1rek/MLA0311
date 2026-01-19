@@ -1,0 +1,42 @@
+import numpy as np
+
+def forward_kinematics(theta):
+    l1, l2, l3 = 1.0, 1.0, 1.0
+    x = l1*np.cos(theta[0]) + l2*np.cos(theta[0]+theta[1]) + l3*np.cos(np.sum(theta))
+    y = l1*np.sin(theta[0]) + l2*np.sin(theta[0]+theta[1]) + l3*np.sin(np.sum(theta))
+    z = 0.5 * theta[2]
+    return np.array([x, y, z])
+
+def cost(theta, target):
+    position = forward_kinematics(theta)
+    return np.sum((position - target)**2)
+
+def analytic_gradient(theta, target):
+    eps = 1e-6
+    grad = np.zeros_like(theta)
+    for i in range(len(theta)):
+        t1 = theta.copy()
+        t2 = theta.copy()
+        t1[i] += eps
+        t2[i] -= eps
+        grad[i] = (cost(t1, target) - cost(t2, target)) / (2 * eps)
+    return grad
+
+target_position = np.array([2.0, 1.5, 0.3])
+theta = np.array([0.1, 0.1, 0.1])
+learning_rate = 0.05
+iterations = 100
+
+print("Optimization Started\n")
+
+for i in range(iterations):
+    grad = analytic_gradient(theta, target_position)
+    theta -= learning_rate * grad
+    loss = cost(theta, target_position)
+    if i % 10 == 0:
+        print(f"Iteration {i:3d} | Loss: {loss:.6f}")
+
+print("\nOptimization Completed")
+print("Final Joint Angles:", theta)
+print("Final End Effector Position:", forward_kinematics(theta))
+print("Target Position:", target_position)
